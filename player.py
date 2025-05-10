@@ -1,12 +1,14 @@
 import pygame, circleshape
-from constants import PLAYER_RADIUS, PLAYER_TURN_SPEED, PLAYER_SPEED
+from constants import PLAYER_RADIUS, PLAYER_TURN_SPEED, PLAYER_SPEED, SHOT_RADIUS, PLAYER_SHOOT_SPEED, PLAYER_SHOOT_COOLDOWN
+from shot import Shot
 
 class Player(circleshape.CircleShape): # inherit player hit box
     def __init__(self, x, y):
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
+        self.shot_timer = 0
 
-    
+    # draw and set player avatar
     
     def triangle(self):
         # player avatar
@@ -20,6 +22,17 @@ class Player(circleshape.CircleShape): # inherit player hit box
     def draw(self, screen):
         pygame.draw.polygon(screen, (255, 255, 255), self.triangle(), 2)
 
+    # Player shoot
+    
+    def shoot(self):
+        shot = Shot(self.position.x, self.position.y, SHOT_RADIUS)
+        s_foward = pygame.Vector2(0,1)
+        s_foward.rotate_ip(self.rotation)
+        s_foward *= PLAYER_SHOOT_SPEED
+        shot.velocity = s_foward
+        self.shot_timer = PLAYER_SHOOT_COOLDOWN
+        
+    
     # Player movement
 
     def rotate(self,dt):
@@ -32,6 +45,7 @@ class Player(circleshape.CircleShape): # inherit player hit box
     
     def update(self, dt):
         keys = pygame.key.get_pressed()
+        self.shot_timer -= dt
 
         if keys[pygame.K_a]:
             self.rotate(-dt)
@@ -44,4 +58,8 @@ class Player(circleshape.CircleShape): # inherit player hit box
 
         if keys[pygame.K_s]:
             self.move(-dt)
+
+        if keys[pygame.K_SPACE]:
+            if self.shot_timer <= 0:
+             self.shoot()
 
